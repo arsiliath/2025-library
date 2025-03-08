@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Details</title>
+  <!-- Include Masonry and imagesLoaded libraries -->
+  <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+  <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+  <style>
+    /* Keep styles inline here to make it easier for GPT to update in one go */
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      margin: 20px;
+      text-align: center;
+      position: relative;
+    }
+    /* Fixed Home link styling */
+    .home-link {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      font-size: 16px;
+      text-decoration: none;
+      color: #000;
+      background: #f0f0f0;
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      z-index: 1000;
+    }
+    #main-image {
+      max-width: 90%;
+      height: auto;
+      max-height: 100vh;
+    }
+    .metadata-table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 80%;
+    }
+    .metadata-table th,
+    .metadata-table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    /* Updated Masonry container styling */
+    .related-images {
+      max-width: 1200px;
+      margin: 20px auto;
+    }
+    /* Style for the container that holds masonry items */
+    .masonry-items {
+      /* No extra styling required; used solely as a wrapper */
+    }
+    /* Updated image-card style for Masonry (fixed width) */
+    .image-card {
+      background: #fff;
+      margin-bottom: 1rem;
+      width: 200px;
+      display: inline-block;
+      border: 1px solid #ddd;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    }
+    .image-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    /* Style for the More button */
+    .more-button {
+      margin-top: 10px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 5px 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Fixed Home link at the top left -->
+  <a href="/" class="home-link">Home</a>
+  
+  <h1>Image Details</h1>
+  <div id="image-container">
+    <img id="main-image" src="" alt="Image">
+  </div>
+  <h2>Image Info</h2>
+  <table class="metadata-table" id="metadata-table">
+    <!-- Metadata rows will be added here -->
+  </table>
+  <h2>Feedback</h2>
+  <textarea id="feedback" placeholder="Enter correction details here..."></textarea>
+  <br>
+  <button id="retry-button">Retry</button>
+  
+  <!-- Section Order Updated Here -->
+  <h2>Related Images by Artist</h2>
+  <div id="artist-related" class="related-images"></div>
+  
+  <h2>TF‑IDF Similar Images</h2>
+  <div id="tfidf-related" class="related-images"></div>
+  
+  <h2>Similar Images</h2>
+  <div id="similar-related" class="related-images"></div>
+
+  <script>
+    // Remove '/files/' prefix and decode to get the relative path.
+    const filename = decodeURIComponent(window.location.pathname.replace(/^\/files\//, ''));
+    // Read the folder parameter from the query string (default to "all").
+    const urlParams = new URLSearchParams(window.location.search);
+    const folderParam = urlParams.get("folder") || "all";
+
+    // Set main image.
+    const mainImage = document.getElementById('main-image');
+    mainImage.src = '/images/' + filename;
+    mainImage.alt = filename;
+
+    // Helper function to initialize Masonry on a container after images have loaded.
+    function initMasonry(container) {
+      imagesLoaded(container, function() {
+        new Masonry(container, {
+          itemSelector: '.image-card',
+          columnWidth: '.image-card',
+          gutter: 10,
+          fitWidth: true,
+          transitionDuration: 0
+        });
+      });
+    }
+
+    // Display all items (used for TF‑IDF section).
+    function displayRelated(containerId, items) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        container.innerHTML = '<p>No related images found.</p>';
+        return;
+      }
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.classList.add('image-card');
+        card.innerHTML = `
+          <a href="/files/${item.filename}${folderParam !== 'all' ? '?folder=' + encodeURIComponent(folderParam) : ''}" target="_blank">
+            <img src="/images/${item.filename}" alt="${item.filename}">
+          </a>
+          <div style="font-size:12px; color:#666;">Score: ${item.similarity ? item.similarity.toFixed(2) : ''}</div>
+        `;
+        container.appendChild(card);
+      });
+      initMasonry(container);
+    }
+
+    // For non‑TF‑IDF sections: show the first 10 items and add a "More" button outside the Masonry container.
+    function displayRelatedWithMore(containerId, items, limit = 10) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+
+      // Create a wrapper for the masonry items.
+      const masonryWrapper = document.createElement('div');
+      masonryWrapper.className = 'masonry-items';
+      container.appendChild(masonryWrapper);
+
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        masonryWrapper.innerHTML = '<p>No related images found.</p>';
+        return;
+      }
+      
+      // Split items into initially visible and the remaining ones.
+      const initialItems = items.slice(0, limit);
+      const remainingItems = items.slice(limit);
+      
+      // Append the initial items to the masonry wrapper.
+      initialItems.forEach(item => {
+        const card = document.createElement('div');
+        card.classList.add('image-card');
+        card.innerHTML = `
+          <a href="/files/${item.filename}${folderParam !== 'all' ? '?folder=' + encodeURIComponent(folderParam) : ''}" target="_blank">
+            <img src="/images/${item.filename}" alt="${item.filename}">
+          </a>
+          <div style="font-size:12px; color:#666;">Score: ${item.similarity ? item.similarity.toFixed(2) : ''}</div>
+        `;
+        masonryWrapper.appendChild(card);
+      });
+      
+      initMasonry(masonryWrapper);
+      
+      // If there are additional items, add a "More" button outside the masonry wrapper.
+      if (remainingItems.length > 0) {
+        const moreButton = document.createElement('button');
+        moreButton.textContent = 'More';
+        moreButton.className = 'more-button';
+        container.appendChild(moreButton);
+        
+        moreButton.addEventListener('click', function() {
+          // Append the remaining items to the masonry wrapper.
+          remainingItems.forEach(item => {
+            const card = document.createElement('div');
+            card.classList.add('image-card');
+            card.innerHTML = `
+              <a href="/files/${item.filename}${folderParam !== 'all' ? '?folder=' + encodeURIComponent(folderParam) : ''}" target="_blank">
+                <img src="/images/${item.filename}" alt="${item.filename}">
+              </a>
+              <div style="font-size:12px; color:#666;">Score: ${item.similarity ? item.similarity.toFixed(2) : ''}</div>
+            `;
+            masonryWrapper.appendChild(card);
+          });
+          // Remove the More button and reinitialize Masonry.
+          moreButton.remove();
+          initMasonry(masonryWrapper);
+        });
+      }
+    }
+
+    // Fetch metadata for this image.
+    fetch('/api/files/' + filename)
+      .then(resp => resp.json())
+      .then(data => {
+        // Build metadata table.
+        const table = document.getElementById('metadata-table');
+        for (const key in data) {
+          if (key === 'filename') continue;
+          const row = document.createElement('tr');
+          const cellKey = document.createElement('th');
+          cellKey.textContent = key;
+          const cellValue = document.createElement('td');
+          cellValue.textContent = Array.isArray(data[key]) ? data[key].join(', ') : data[key];
+          row.appendChild(cellKey);
+          row.appendChild(cellValue);
+          table.appendChild(row);
+        }
+        // Append a final row with the filename.
+        const row = document.createElement('tr');
+        const cellKey = document.createElement('th');
+        cellKey.textContent = "Filename";
+        const cellValue = document.createElement('td');
+        cellValue.textContent = filename;
+        row.appendChild(cellKey);
+        row.appendChild(cellValue);
+        table.appendChild(row);
+
+        // -------------------------------
+        // Section 1: Related by same artist (use folderParam if not "all")
+        // -------------------------------
+        if (data.artist && !data.artist.toLowerCase().includes("unknown")) {
+          const artistQuery = encodeURIComponent(data.artist);
+          fetch('/api/search?q="' + artistQuery + '"&limit=10&folder=' + encodeURIComponent(folderParam))
+            .then(resp => resp.json())
+            .then(searchData => {
+              displayRelatedWithMore('artist-related', searchData.results.map(item => ({ filename: item.filename })));
+            })
+            .catch(err => {
+              console.error('Error fetching artist-related images:', err);
+            });
+        } else {
+          document.getElementById('artist-related').innerHTML = '<p>No related images by artist.</p>';
+        }
+
+        // -------------------------------
+        // Section 2: TF‑IDF Similar Images (show all)
+        // -------------------------------
+        fetch('/api/related_tfidf?filename=' + encodeURIComponent(filename) + '&folder=' + encodeURIComponent(folderParam))
+          .then(resp => resp.json())
+          .then(tfidfData => {
+            if (tfidfData && Array.isArray(tfidfData.related)) {
+              displayRelated('tfidf-related', tfidfData.related);
+            } else {
+              document.getElementById('tfidf-related').innerHTML = '<p>No TF‑IDF similar images found.</p>';
+            }
+          })
+          .catch(err => {
+            console.error('Error fetching TF‑IDF similar images:', err);
+            document.getElementById('tfidf-related').innerHTML = '<p>Error fetching TF‑IDF similar images.</p>';
+          });
+
+        // -------------------------------
+        // Section 3: Similar Images (by metadata similarity)
+        // -------------------------------
+        fetch('/api/related?filename=' + encodeURIComponent(filename) + '&folder=' + encodeURIComponent(folderParam))
+          .then(resp => resp.json())
+          .then(similarData => {
+            if (similarData && Array.isArray(similarData.related)) {
+              displayRelatedWithMore('similar-related', similarData.related);
+            } else {
+              document.getElementById('similar-related').innerHTML = '<p>No similar images found.</p>';
+            }
+          })
+          .catch(err => {
+            console.error('Error fetching similar images:', err);
+            document.getElementById('similar-related').innerHTML = '<p>Error fetching similar images.</p>';
+          });
+      })
+      .catch(err => {
+        console.error('Error fetching image data:', err);
+      });
+
+    // Retry button handler.
+    document.getElementById('retry-button').addEventListener('click', () => {
+      const correction = document.getElementById('feedback').value.trim();
+      if (!correction) {
+        alert("Please enter your correction info.");
+        return;
+      }
+      fetch('/api/retry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename, correction })
+      })
+        .then(resp => resp.json())
+        .then(data => {
+          if (data.error) {
+            alert("Error: " + data.error);
+          } else {
+            window.location.reload();
+          }
+        })
+        .catch(err => {
+          console.error('Error in retry:', err);
+          alert("Retry failed. Check the console for details.");
+        });
+    });
+  </script>
+</body>
+</html>

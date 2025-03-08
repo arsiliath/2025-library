@@ -1,3 +1,14 @@
+# 2025-library
+.env
+data.json
+tfidf_vectors.json
+images/*
+research/data_log/*
+
+
+
+
+# ------------
 # Logs
 logs
 *.log

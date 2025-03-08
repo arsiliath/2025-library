@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Search</title>
+  <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+  <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+  <style>
+    /* Keep styles inline here to make it easier for GPT to update in one go */
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      margin: 20px;
+      text-align: center;
+    }
+
+    #search {
+      width: 30%;
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+
+    /* New folder dropdown style */
+    #folderSelect {
+      padding: 10px;
+      font-size: 16px;
+      margin-left: 10px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+
+    /* The Masonry container (no CSS columns now) */
+    #results {
+      margin: auto;
+    }
+
+    .image-card {
+      background: #fff;
+      margin-bottom: 1rem;
+      width: 200px;
+      /* Fixed width: ~5 columns in a 1200px container (5 * 232 = 1160px plus gutters) */
+      display: inline-block;
+      border: 1px solid #ddd;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .image-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .metadata {
+      font-size: 14px;
+      margin-top: 10px;
+      padding: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <input type="text" id="search" placeholder="Search images...">
+  <!-- Folder dropdown -->
+  <select id="folderSelect">
+    <option value="all">All</option>
+  </select>
+  <div id="results"></div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const searchInput = document.getElementById('search');
+      const folderSelect = document.getElementById('folderSelect');
+      const resultsContainer = document.getElementById('results');
+      let page = 1;
+      let query = '';
+      let totalResults = 0;
+      let loading = false;
+      let msnry = null; // Masonry instance
+
+      // Simple debounce function with 100ms delay.
+      function debounce(func, delay) {
+        let timeout;
+        return function (...args) {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+      }
+
+      // Load folder options from API.
+      async function loadFolders() {
+        try {
+          const response = await fetch('/api/folders');
+          const data = await response.json();
+          folderSelect.innerHTML = '<option value="all">All</option>';
+          data.folders.forEach(folder => {
+            const option = document.createElement('option');
+            option.value = folder;
+            option.textContent = folder;
+            folderSelect.appendChild(option);
+          });
+          if (data.default && data.default !== 'all') {
+            folderSelect.value = data.default;
+          }
+        } catch (err) {
+          console.error('Error loading folders:', err);
+        }
+      }
+
+      searchInput.focus();
+
+      // Initialize Masonry with no transition animation.
+      function initMasonry() {
+        msnry = new Masonry(resultsContainer, {
+          itemSelector: '.image-card',
+          columnWidth: '.image-card',
+          percentPosition: false,
+          gutter: 10,
+          transitionDuration: 0,  // disable animation
+          fitWidth: true
+        });
+      }
+
+      // Append new items and update Masonry.
+      function appendItems(newElems) {
+        newElems.forEach(elem => resultsContainer.appendChild(elem));
+        if (!msnry) {
+          initMasonry();
+          // Ensure layout after images load.
+          imagesLoaded(resultsContainer, function () {
+            msnry.layout();
+          });
+        } else {
+          msnry.appended(newElems);
+          imagesLoaded(resultsContainer, function () {
+            msnry.layout();
+          });
+        }
+      }
+
+      async function fetchResults(reset = false) {
+        if (loading) return;
+        loading = true;
+        const currentQuery = searchInput.value.trim();
+        const folder = folderSelect.value;
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}&limit=20&folder=${encodeURIComponent(folder)}`);
+        const data = await response.json();
+
+        if (searchInput.value.trim() !== currentQuery) {
+          loading = false;
+          return;
+        }
+
+        totalResults = data.total;
+
+        if (reset) {
+          resultsContainer.innerHTML = '';
+          page = 1;
+          msnry = null; // reset Masonry
+        }
+        const fragment = document.createDocumentFragment();
+        data.results.forEach(item => {
+          const card = document.createElement('div');
+          card.classList.add('image-card');
+          let link = `/files/${item.filename}`;
+          if (folder !== 'all') {
+            link += `?folder=${encodeURIComponent(folder)}`;
+          }
+          card.innerHTML = `
+      <a href="${link}" target="_blank">
+        <img src="images/${item.filename}" alt="${item.title || 'Untitled'}">
+      </a>
+      <div class="metadata"></div>
+        `;
+          fragment.appendChild(card);
+        });
+        appendItems(Array.from(fragment.childNodes));
+        page++;
+        loading = false;
+      }
+
+      // Debounced search input (100ms delay)
+      const debouncedFetch = debounce(() => {
+        query = searchInput.value.trim();
+        page = 1;
+        fetchResults(true);
+        loading = false; 
+        // hack to let it try multiple times
+      }, 300);
+
+      searchInput.addEventListener('input', debouncedFetch);
+
+      folderSelect.addEventListener('change', () => {
+        page = 1;
+        fetchResults(true);
+      });
+      window.addEventListener('scroll', () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+          fetchResults();
+        }
+      });
+
+      async function initialize() {
+        await loadFolders();
+        page = 1;
+        fetchResults(true);
+      }
+      initialize();
+
+      window.addEventListener('load', () => {
+        if (msnry) msnry.layout();
+      });
+    });
+  </script>
+
+  </script>
+
+</body>
+
+</html>

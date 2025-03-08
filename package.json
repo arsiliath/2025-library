@@ -1,0 +1,23 @@
+{
+  "name": "2025-01-28-image-classification",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app/index.js",
+    "research": "node research/research.js",
+    "tfidf": "node research/compute_tf_idf.js",
+    "search-test": "curl -X GET \"http://localhost:3000/api/search?q=painting\"",
+    "duplicates": "node research/duplicates.js",
+    "rename": "node research/rename.js",
+    "prune": "node research/prune.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.18.2",
+    "fuzzball": "^2.1.3",
+    "natural": "^8.0.1",
+    "open": "^10.1.0",
+    "openai": "^4.80.1"
+  }
+}
