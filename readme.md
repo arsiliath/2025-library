@@ -26,11 +26,10 @@ This project is a cross-platform image classification tool built with Node.js. F
 
 ## Usage
 
-There are two primary usage scenarios depending on whether you already have images or need to add them.
 
-### Scenario 1: Images Already Present
+### Scenario 1: Images already classified
 
-If you already have images in your project:
+If you already have images and a data.json in your project:
 
 1. **Start the server:**
 
@@ -44,7 +43,7 @@ If you already have images in your project:
 
 ### Scenario 2: No Images Present
 
-If you need to add images and set up the environment:
+If you need to add images and run classification
 
 1. **Configure the API Key:**
 
