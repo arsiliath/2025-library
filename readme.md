@@ -31,6 +31,15 @@ This project is a cross-platform image classification tool built with Node.js. F
 
 If you already have images and a data.json in your project:
 
+0. **Configure the API Key:**
+
+   - Create a \`.env\` file in the project root.
+   - Add your OpenAI API key:
+     ```
+     OPENAI_API_KEY=sk-pr...
+     ```
+
+
 1. **Start the server:**
 
    ```bash
