@@ -27,30 +27,8 @@ This project is a cross-platform image classification tool built with Node.js. F
 ## Usage
 
 
-### Scenario 1: Images already classified
 
-If you already have images and a data.json in your project:
-
-0. **Configure the API Key:**
-
-   - Create a \`.env\` file in the project root.
-   - Add your OpenAI API key:
-     ```
-     OPENAI_API_KEY=sk-pr...
-     ```
-
-
-1. **Start the server:**
-
-   ```bash
-   npm start
-   ```
-
-2. **View in Browser:**
-
-   Open your browser and navigate to [http://localhost:3000](http://localhost:3000).
-
-### Scenario 2: Images not classified
+### Scenario 1: Images not classified
 
 If you need to add images and run classification
 
@@ -64,6 +42,7 @@ If you need to add images and run classification
 
 2. **Add Your Images:**
 
+   - Make a new directory in the root of the project called \`images/\`.
    - Place your image files in the \`images/\` directory. Images can be organized in subfolders if needed.
 
 3. **Run Data Preparation Scripts:**
@@ -78,6 +57,8 @@ If you need to add images and run classification
      ```
 
 4. **Optional Maintenance Scripts:**
+
+   - You probably don't need to use any of these.
 
    - **Prune:** Remove entries that do not have a matching image file.
      ```bash
@@ -103,6 +84,23 @@ If you need to add images and run classification
    npm start
    ```
    Then open your browser and navigate to [http://localhost:3000](http://localhost:3000).
+
+
+### Scenario 2: Images already classified
+
+If you already have an API key setup images and a data.json in your project:
+
+
+1. **Start the server:**
+
+   ```bash
+   npm start
+   ```
+
+2. **View in Browser:**
+
+   Open your browser and navigate to [http://localhost:3000](http://localhost:3000).
+
 
 ## License
 
