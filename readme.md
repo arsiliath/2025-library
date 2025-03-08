@@ -104,6 +104,15 @@ If you already have an API key setup images and a data.json in your project:
    Open your browser and navigate to [http://localhost:3000](http://localhost:3000).
 
 
+## Key files
+
+1. [research/research.js](research/research.js)
+   Handles the process of querying OpenAI for info about each iage.
+
+
+1. [app/index.js](app/index.js)
+   Runs the frontend server.
+
 ## License
 
 All rights reserved.

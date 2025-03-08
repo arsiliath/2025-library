@@ -1,3 +1,4 @@
+// This file handles the research process of analyzing images using OpenAI's API. It reads images from a folder, processes them using the OpenAI API, and saves the results to a data.json file. The script can be run with an optional mode argument to process all images or only new images.
 import fs from "fs";
 import path from "path";
 import OpenAI from "openai";
@@ -34,6 +35,7 @@ const archiveDataJson = () => {
   }
 };
 
+// Analyze an image using OpenAI's chat API
 const analyze = async (p, index, total) => {
   const file = path.basename(p);
   console.log(`Processing image ${index + 1} of ${total}: ${file}`);
@@ -131,6 +133,7 @@ const getAllImageFiles = (dir, baseDir = dir) => {
   return results;
 };
 
+// Process images in a folder, optionally in "add_new" mode to skip existing images.
 const processImages = async (folder, mode = "add_new") => {
   let existingData = {};
 
@@ -217,5 +220,6 @@ const processImages = async (folder, mode = "add_new") => {
   console.log(`Final save to data.json complete.`);
 };
 
+// Run the script with optional mode argument (default is "add_new")
 const mode = process.argv[2] || "add_new";
 processImages(images_folder, mode);
