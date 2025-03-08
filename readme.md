@@ -1,6 +1,8 @@
 # 2025-01-28 Image Classification
 
-This project is a cross-platform image classification tool built with Node.js. Follow the steps below to get up and running on any platform.
+This project is an image classification and search tool built with Node.js. 
+
+Follow the steps below to get up and running.
 
 ## Getting Started
 
