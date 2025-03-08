@@ -4,7 +4,6 @@
 - design
 - tag cloud 
 - filter based search
-- research in parallel?
 - a way to try to re-research a specific image
 - open image and its data in new tab
 - is it labeling all diagrams with diagram?
