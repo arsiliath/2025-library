@@ -41,7 +41,7 @@ If you already have images and a data.json in your project:
 
    Open your browser and navigate to [http://localhost:3000](http://localhost:3000).
 
-### Scenario 2: No Images Present
+### Scenario 2: Images not classified
 
 If you need to add images and run classification
 
@@ -63,7 +63,7 @@ If you need to add images and run classification
      ```bash
      npm run research
      ```
-   - **Compute TF-IDF for improved search indexing:**
+   - **Compute TF-IDF for improved similarity detection:**
      ```bash
      npm run tfidf
      ```
@@ -102,4 +102,3 @@ All rights reserved.
 ## Credits
 
 For AI acknowledgements, please see [AI.md](AI.md).
-`

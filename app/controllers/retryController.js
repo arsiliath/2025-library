@@ -7,6 +7,9 @@ import { imageData } from './datasetController.js';
 
 dotenv.config();
 const oai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Handles a retry request to re-analyze an image based on user-provided corrections.
