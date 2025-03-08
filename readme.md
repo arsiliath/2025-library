@@ -108,4 +108,4 @@ All rights reserved.
 
 ## Credits
 
-For AI acknowledgements, please see [AI.md](AI.md).
+For AI acknowledgements, please see [ai.md](ai.md).
