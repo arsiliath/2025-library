@@ -2,7 +2,7 @@
 import { readFile, writeFile } from 'fs/promises';
 
 // Define the folder name you want to prepend
-const folderName = 'ars'; // Change this to your desired folder name
+const folderName = 'example'; // Change this to your desired folder name
 
 // Input and output file names
 const inputFile = 'data.json';

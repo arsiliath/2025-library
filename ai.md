@@ -32,11 +32,21 @@ The following example prompts were used throughout development:
   I need my search to match "Japan" and "Japanese". Can I use `natural` or `fuzzball` in Node.js to handle this?
   ```
 
+- ** For documentation
+  ```plaintext
+  /doc (in copilot)
+  ```
+
+- ** For readme
+  ```plaintext
+  write a cross platform readme.md for a project with this package json...
+  ```
 ## 4. How the Output Was Used
 - AI-generated **code snippets were reviewed, modified, and integrated** into the final codebase.
 - The AI was used iteratively for **troubleshooting, optimizing performance, and refining logic**.
 - **Final implementations** include a mix of AI-assisted suggestions and manual modifications to ensure project goals are met.
 - Documenting the code
+- Writing a readme
 
 
 
