@@ -120,3 +120,5 @@ All rights reserved.
 ## Credits
 
 For AI acknowledgements, please see [ai.md](ai.md).
+
+Based on code from Rebecca Aston in Goldsmiths Workshops in Creative Coding 2.
